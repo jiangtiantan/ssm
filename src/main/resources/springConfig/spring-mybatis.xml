@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+              http://www.springframework.org/schema/context/spring-context.xsd
+">
+
+    <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+    <!--配置整合mybatis过程-->
+    <!--引入外部属性文件-->
+    <!--<bean id="propertyConfigurer"-->
+          <!--class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">-->
+        <!--<property name="location" value="classpath:jdbc.properties" />-->
+    <!--</bean>-->
+    <!--添加自动扫描的包-->
+    <context:component-scan base-package="com.imooc.ssm"></context:component-scan>
+
+    <!--数据库连接池-->
+
+    <!--<bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource" destroy-method="close">-->
+        <!--<property name="driverClass" value="com.mysql.jdbc.Driver" />-->
+        <!--<property name="jdbcUrl" value="jdbc:mysql://127.0.0.1:3306/javatest?useUnicode=true&amp;characterEncoding=utf8" />-->
+        <!--<property name="username" value="root"/>-->
+        <!--<property name="password" value="123456"/>-->
+
+        <!--<property name="idleConnectionTestPeriodInMinutes" value="240"/>-->
+        <!--<property name="idleMaxAgeInMinutes" value="60"/>-->
+        <!--<property name="maxConnectionsPerPartition" value="250"/>-->
+        <!--<property name="minConnectionsPerPartition" value="40"/>-->
+        <!--<property name="partitionCount" value="2"/>-->
+        <!--<property name="acquireIncrement" value="10"/>-->
+        <!--<property name="statementsCacheSize" value="0"/>-->
+        <!--<property name="releaseHelperThreads" value="5"/>-->
+        <!--<property name="connectionTimeoutInMs" value="5000"/>-->
+    <!--</bean>-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${driverClass}"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/javatest?useUnicode=true&amp;characterEncoding=utf8"/>
+        <property name="user" value="root"/>
+        <property name="password" value="123456"/>
+
+
+        <property name="checkoutTimeout" value="1000"/>
+        <property name="maxPoolSize" value="30"/>
+        <property name="minPoolSize" value="10"/>
+        <property name="autoCommitOnClose" value="false"/>
+
+        <property name="acquireRetryAttempts" value="2"/>
+        <property name="acquireIncrement" value="5"/>
+    </bean>
+
+    <!--配置sqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--注入数据库连接池-->
+        <property name="dataSource" ref="dataSource"></property>
+        <!--配置mybatis全局配置文件-->
+        <property name="configLocation" value="classpath:mybatis.xml"></property>
+        <!--扫描实体类 使用别名-->
+        <property name="typeAliasesPackage" value="com.imooc.ssm.bean"></property>
+        <!--配置sql配置文件所需要的xml文件-->
+        <property name="mapperLocations" value="classpath*:mapper/*.xml"></property>
+    </bean>
+
+    <!--配置扫描Dao包，动态实现Dao接口，自动注入到spring容器中-->
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--注入sqlSessionFactory-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+        <!--需要扫描的Dao接口包-->
+        <property name="basePackage" value="com.imooc.ssm.dao"></property>
+
+    </bean>
+    <!--redisDao-->
+    <bean id="redisDao" class="com.imooc.ssm.dao.cache.RedisDao">
+        <constructor-arg index="0" value="192.168.12.128"></constructor-arg>
+        <constructor-arg index="1" value="6379"></constructor-arg>
+    </bean>
+
+</beans>
